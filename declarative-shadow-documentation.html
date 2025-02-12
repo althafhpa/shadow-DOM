@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Declarative Shadow DOM Implementation Guide</title>
+    <style>
+        /* Same styling as drupal-shadow-dom.html */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        pre { background: #f5f5f5; padding: 15px; border-radius: 5px; }
+        .note { background: #e1f5fe; padding: 15px; border-left: 4px solid #03a9f4; }
+    </style>
+</head>
+<body>
+    <h1>Declarative Shadow DOM Implementation Guide</h1>
+
+    <div class="section">
+        <h2>Basic Structure</h2>
+        <pre><code>
+&lt;div data-block="content-main" shadowroot="open"&gt;
+    &lt;link rel="stylesheet" href="css/a.css"&gt;
+    &lt;link rel="stylesheet" href="css/b.css"&gt;
+    &lt;div id="oEmbed"&gt;...&lt;/div&gt;
+&lt;/div&gt;
+        </code></pre>
+    </div>
+
+    <div class="section">
+        <h2>Drupal Integration</h2>
+        <pre><code>
+document.addEventListener("DOMContentLoaded", () => {
+    const galleries = document.querySelector('[data-block="content-main"]')
+        .shadowRoot
+        .querySelectorAll('.media-gallery');
+
+    galleries.forEach(gallery => {
+        if (typeof initMediaGallery === 'function') {
+            initMediaGallery(gallery);
+        }
+    });
+});
+        </code></pre>
+    </div>
+
+    <div class="note">
+        <h3>Key Differences from Imperative Shadow DOM:</h3>
+        <ul>
+            <li>Uses shadowroot="open" attribute for declaration</li>
+            <li>Stylesheets directly included in shadow root</li>
+            <li>No JavaScript required for initial shadow DOM creation</li>
+            <li>Better server-side rendering support</li>
+            <li>Simplified content isolation model</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Updating Drupal Code</h2>
+        <pre><code>
+// Add to your Drupal theme's JavaScript
+Drupal.behaviors.declarativeShadowDOM = {
+    attach: function (context, settings) {
+        const shadowHosts = context.querySelectorAll('[shadowroot="open"]');
+        shadowHosts.forEach(host => {
+            // Access shadow root content
+            const shadowRoot = host.shadowRoot;
+            
+            // Initialize galleries
+            const galleries = shadowRoot.querySelectorAll('.media-gallery');
+            galleries.forEach(gallery => {
+                new MediaGallery(gallery).init();
+            });
+            
+            // Handle Drupal AJAX updates
+            if (shadowRoot.querySelector('.use-ajax')) {
+                Drupal.behaviors.AJAX.attach(shadowRoot, settings);
+            }
+        });
+    }
+};
+        </code></pre>
+    </div>
+
+    <div class="section">
+        <h2>Performance Benefits</h2>
+        <ul>
+            <li>Faster initial page load - no JavaScript overhead for DOM creation</li>
+            <li>Better SEO - content immediately available to crawlers</li>
+            <li>Reduced layout shifts - structure defined declaratively</li>
+            <li>Simplified debugging - shadow DOM visible in initial HTML</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Browser Support</h2>
+        <pre><code>
+// Polyfill for older browsers
+if (!HTMLElement.prototype.attachShadow) {
+    // Load polyfill
+    const script = document.createElement('script');
+    script.src = 'path/to/declarative-shadow-dom-polyfill.js';
+    document.head.appendChild(script);
+}
+        </code></pre>
+    </div>
+
+    <div class="implementation-steps">
+        <h2>Implementation Checklist</h2>
+        <ol>
+            <li>Add shadowroot attribute to container</li>
+            <li>Include CSS directly in shadow root</li>
+            <li>Update Drupal behaviors for shadow DOM context</li>
+            <li>Add polyfill for browser support</li>
+            <li>Test AJAX and dynamic content updates</li>
+        </ol>
+    </div>
+</body>
+</html>

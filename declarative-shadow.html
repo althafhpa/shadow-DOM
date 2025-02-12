@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shadow DOM Example</title>
+</head>
+<body>
+    <div data-block="content-main" shadowroot="open">
+        <!-- Add stylesheets inside shadow root -->
+        <link rel="stylesheet" href="css/a.css">
+        <link rel="stylesheet" href="css/b.css">
+
+         <div id="oEmbed">
+            <div id="block-mainpagecontent" data-block="content-main" shadowroot="open" class="block block-system block-system-main-block">
+                Embedding content here...
+            </div>
+        </div>
+
+        <!-- Add scripts inside shadow root -->
+        <script src="js/modernizr.js"></script>
+        <script src="js/drupal-jquery.js"></script>
+        <script src="js/drupal.js"></script>
+        <script type="module" src="js/media-gallery.js"></script>
+        <script type="module" src="js/media-gallery-drupal.js"></script>
+        <script src="js/drupal-compressed.js"></script>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const galleries = document.querySelector('[data-block="content-main"]')
+                .shadowRoot
+                .querySelectorAll('.media-gallery');
+
+             // Initialize media gallery. This function is defined in media-gallery.js in media library js in Drupal.
+            galleries.forEach(gallery => {
+                if (typeof initMediaGallery === 'function') {
+                    initMediaGallery(gallery);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

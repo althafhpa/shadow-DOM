@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shadow DOM Example</title>
+</head>
+<body>
+    <div id="oEmbed">
+        <div id="block-mainpagecontent" data-block="content-main" class="block block-system block-system-main-block">
+            Embedding content here...
+        </div>
+    </div>
+    <script>
+        let shadowRoot; // Declare globally for consistent scoping.
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // Initialize Shadow DOM
+            const shadowHost = document.querySelector("#shadow-host") || createShadowHost();
+            shadowRoot = shadowHost.attachShadow({ mode: "open" }); // Open ShadowDOM for easier dev tools inspection.
+
+            // Move oEmbed Content into Shadow DOM
+            moveContentToShadowDOM();
+
+            // Load necessary JS scripts and then fix Drupal behaviors
+            loadExternalScripts(shadowRoot, () => {
+                fixDrupalBehaviorsInShadowDOM(shadowRoot);
+            });
+        });
+
+        function createShadowHost() {
+            const host = document.createElement("div");
+            host.id = "shadow-host";
+            document.body.appendChild(host);
+            return host;
+        }
+
+        function moveContentToShadowDOM() {
+
+             // Add CSS into Shadow DOM
+             const cssUrls = ["css/a.css","css/b.css"];
+
+            cssUrls.forEach((url) => {
+                const link = document.createElement("link");
+                link.rel = "stylesheet";
+                link.href = url;
+                shadowRoot.appendChild(link);
+            });
+
+            const oEmbed = document.getElementById("oEmbed"); // Element from parent DOM
+            if (!oEmbed) {
+                console.error("#oEmbed not found in the parent DOM.");
+                return;
+            }
+
+            // Clone & append to shadow root
+            shadowRoot.appendChild(oEmbed.cloneNode(true)); // Deep clone `oEmbed` with all its content
+
+            oEmbed.innerHTML = ''; // Clear the original content
+        }
+
+        function loadExternalScripts(shadowRoot, callback) {
+            const scriptQueue = [
+                {
+                    "src": "js/modernizr.js",
+                    "module": false
+                },
+                {
+                    "src": "js/drupal-jquery.js",
+                    "module": false,
+                },
+                {
+                    "src": "js/drupal.js",
+                    "module": false
+                },
+                {
+                    "src": "js/media-gallery.js",
+                    "module": true
+                },
+                {
+                    "src": "js/media-gallery-drupal.js",
+                    "module": true
+                }
+            ];
+
+            // Load scripts sequentially
+            let currentIndex = 0;
+            let loadedScripts = 0;
+            
+            function loadNextScript() {
+                if (currentIndex >= scriptQueue.length) {
+                    if (loadedScripts === scriptQueue.length) {
+                        callback();
+                    }
+                    return;
+                }
+
+                const scriptSpec = scriptQueue[currentIndex];
+                const script = document.createElement("script");
+                script.src = scriptSpec.src;
+                script.type = scriptSpec.module ? "module" : "text/javascript";
+                
+                script.onload = () => {
+                    loadedScripts++;
+                    currentIndex++;
+                    loadNextScript();
+                };
+
+                shadowRoot.appendChild(script);
+            }
+
+            loadNextScript();
+        }
+
+        function fixDrupalBehaviorsInShadowDOM(shadowRoot) {
+            // Get the main content container from shadow DOM
+            const behaviorsContainer = shadowRoot.querySelector("#block-mainpagecontent") || 
+                                    shadowRoot.querySelector("#oEmbed");
+            
+            if (!behaviorsContainer) {
+                console.log("Content container not found in Shadow DOM");
+                return;
+            }
+
+            // Initialize Drupal settings if needed
+            if (typeof Drupal === "undefined") {
+                window.Drupal = {
+                    behaviors: {},
+                    settings: {}
+                };
+            }
+
+            // Create a context object with the shadow root
+            const context = {
+                root: shadowRoot,
+                container: behaviorsContainer
+            };
+
+            // Attach Drupal behaviors with proper context
+            if (Drupal.attachBehaviors) {
+                Drupal.attachBehaviors(behaviorsContainer, Drupal.settings);
+                console.log("Drupal Behaviors attached successfully to Shadow DOM");
+            }
+
+            // Initialize any media galleries within shadow DOM
+            const galleries = shadowRoot.querySelectorAll('.media-gallery');
+
+            console.log('Gallery elements found:', galleries.length);
+            console.log('Gallery slides:', galleries[0]?.querySelectorAll('.swiper-slide').length);
+
+            if (galleries.length) {
+                galleries.forEach(gallery => {
+                    if (typeof initMediaGallery === 'function') {
+                        initMediaGallery(gallery);
+                    }
+                });
+            }
+
+            if (Drupal.attachBehaviors) {
+                Drupal.attachBehaviors(behaviorsContainer, Drupal.settings);
+            }
+        }
+
+    </script>
+</body>
+</html>
