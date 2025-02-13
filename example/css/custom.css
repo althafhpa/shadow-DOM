@@ -1,0 +1,6 @@
+/*Your site css to overwrite Drupal site oEmbed css*/
+div[data-block="content-main"] {
+    .my-test {
+        color: red;
+    }
+}

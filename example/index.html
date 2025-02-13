@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shadow DOM Example</title>
+
+    <!--    Your site css-->
+    <link rel="stylesheet" href="css/index.css">
+
+    <!--    Your site js-->
+    <script src="js/index.js"></script>
+
+    <!--    Add this on all pages-->
+    <script>
+        if (!HTMLElement.prototype.hasOwnProperty('shadowRoot')) {
+            document.querySelectorAll('[shadowroot]').forEach(element => {
+                const shadowRoot = element.attachShadow({ mode: element.getAttribute('shadowroot') });
+                shadowRoot.innerHTML = element.innerHTML;
+                element.innerHTML = '';
+            });
+        }
+    </script>
+    <!--    Add this on all pages ends-->
+</head>
+<body>
+
+<div class="oEmbed">
+<div class="my-test">hey i am not oEmbed. I am just above....</div>
+
+<!--    Drupal oEmbed response section starts-->
+<!--    Everything below is Drupal oEmbed response-->
+    <div id="block-mainpagecontent" data-block="content-main" shadowroot="open" class="block block-system block-system-main-block">
+
+        <!-- add all drupal stylesheets below -->
+        <link rel="stylesheet" href="css/drupal.css">
+        <!-- add any css to modify drupal oembed below -->
+        <link rel="stylesheet" href="css/custom.css">
+
+        <div class="my-test">hey i am oEmbed!!!....</div>
+
+        <!-- add all drupal oEmbed js  below -->
+        <script src="js/drupal.js"></script>
+
+        <!-- add any of your custom js to update/add to drupal oEmbed below -->
+         <script src="js/custom.js"></script>
+    </div>
+<!--    Drupal oEmbed response section ends-->
+
+</div>
+
+    <div class="my-test">hey i am not oEmbed. I am just below...</div>
+
+    <script>
+        // First, add the Declarative Shadow DOM polyfill
+        if (!HTMLElement.prototype.hasOwnProperty('shadowRoot')) {
+            document.querySelectorAll('[shadowroot]').forEach(element => {
+                const shadowRoot = element.attachShadow({ mode: element.getAttribute('shadowroot') });
+                shadowRoot.innerHTML = element.innerHTML;
+                element.innerHTML = '';
+            });
+        }
+
+        // Only load for gallery page. Try to check if it works without this first.
+        // Then handle the gallery initialization
+        document.addEventListener("DOMContentLoaded", () => {
+            const shadowRoot = document.querySelector('[data-block="content-main"]').shadowRoot;
+            const galleries = shadowRoot.querySelectorAll('.media-gallery');
+
+            galleries.forEach(gallery => {
+                if (typeof initMediaGallery === 'function') {
+                    initMediaGallery(gallery);
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
