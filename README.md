@@ -1,6 +1,6 @@
 Example embedding html contents using Shadow DOM and Declarative Shadow DOM.
 
-Tested oEmbed Drupal content to another CMS. Tested with Es6 module media gallery.
+Tested oEmbed Drupal content to another CMS. Tested with ES6 module media gallery.
 
 Shadow DOM is set on client side and requires some JS updates but Declarative Shadow DOM is set on server side and it is very easy to set up and use. 
 
